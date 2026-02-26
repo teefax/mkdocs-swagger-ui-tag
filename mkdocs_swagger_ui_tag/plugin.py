@@ -72,6 +72,7 @@ class SwaggerUIPlugin(BasePlugin):
         # Custom JavaScript hooks (raw JS, not JSON-serializable)
         ("requestInterceptor", config_options.Type(str, default="")),
         ("onCompleteScript", config_options.Type(str, default="")),
+        ("operationsSorter", config_options.Type(str, default="")),
     )
 
     def on_pre_page(self, page, config, files, **kwargs):
@@ -185,6 +186,10 @@ class SwaggerUIPlugin(BasePlugin):
                 "oncompletescript",
                 self.config["onCompleteScript"],
             )
+            operations_sorter = swagger_ui_ele.get(
+                "operationssorter",
+                self.config["operationsSorter"],
+            )
 
             template_output = template.render(
                 css_dir=css_dir,
@@ -200,6 +205,7 @@ class SwaggerUIPlugin(BasePlugin):
                 oath2_prop_str=json.dumps(cur_oath2_prop),
                 request_interceptor=request_interceptor,
                 on_complete_script=on_complete_script,
+                operations_sorter=operations_sorter,
             )
             cur_id = hashlib.sha256(template_output.encode()).hexdigest()[:8]
             iframe_filename = f"swagger-{cur_id}.html"
@@ -337,7 +343,7 @@ class SwaggerUIPlugin(BasePlugin):
 
     def process_options(self, config, swagger_ui_ele):
         """Retrieve Swagger UI options from attribute and use config options as default"""
-        skip_option_keys = ["background", "custom_css_files", "requestInterceptor", "onCompleteScript"]
+        skip_option_keys = ["background", "custom_css_files", "requestInterceptor", "onCompleteScript", "operationsSorter"]
         global_options = {
             k: v for k, v in dict(self.config).items() if k not in skip_option_keys
         }

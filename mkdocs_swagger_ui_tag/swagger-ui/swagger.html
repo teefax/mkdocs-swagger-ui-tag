@@ -60,6 +60,11 @@
           {{ request_interceptor | safe }}
         },
         {% endif %}
+        {% if operations_sorter %}
+        operationsSorter: function(a, b) {
+          {{ operations_sorter | safe }}
+        },
+        {% endif %}
       })
 
       {% if oath2_prop_str != "{}" %}
