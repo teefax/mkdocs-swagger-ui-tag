@@ -69,6 +69,9 @@ class SwaggerUIPlugin(BasePlugin):
             "filter_files",
             config_options.ListOfItems(config_options.Type(str), default=[]),
         ),
+        # Custom JavaScript hooks (raw JS, not JSON-serializable)
+        ("requestInterceptor", config_options.Type(str, default="")),
+        ("onCompleteScript", config_options.Type(str, default="")),
     )
 
     def on_pre_page(self, page, config, files, **kwargs):
@@ -173,6 +176,16 @@ class SwaggerUIPlugin(BasePlugin):
             if not oauth2_redirect_url:
                 oauth2_redirect_url = default_oauth2_redirect_file
 
+            # Raw JS hooks — not JSON-serializable, passed separately to template
+            request_interceptor = swagger_ui_ele.get(
+                "requestinterceptor",
+                self.config["requestInterceptor"],
+            )
+            on_complete_script = swagger_ui_ele.get(
+                "oncompletescript",
+                self.config["onCompleteScript"],
+            )
+
             template_output = template.render(
                 css_dir=css_dir,
                 extra_css_files=extra_css_files,
@@ -185,6 +198,8 @@ class SwaggerUIPlugin(BasePlugin):
                 validatorUrl=self.config["validatorUrl"],
                 options_str=json.dumps(cur_options, indent=4)[1:-1],
                 oath2_prop_str=json.dumps(cur_oath2_prop),
+                request_interceptor=request_interceptor,
+                on_complete_script=on_complete_script,
             )
             cur_id = hashlib.sha256(template_output.encode()).hexdigest()[:8]
             iframe_filename = f"swagger-{cur_id}.html"
@@ -322,7 +337,7 @@ class SwaggerUIPlugin(BasePlugin):
 
     def process_options(self, config, swagger_ui_ele):
         """Retrieve Swagger UI options from attribute and use config options as default"""
-        skip_option_keys = ["background", "custom_css_files"]
+        skip_option_keys = ["background", "custom_css_files", "requestInterceptor", "onCompleteScript"]
         global_options = {
             k: v for k, v in dict(self.config).items() if k not in skip_option_keys
         }

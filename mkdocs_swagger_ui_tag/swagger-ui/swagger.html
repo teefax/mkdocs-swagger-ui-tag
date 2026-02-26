@@ -54,7 +54,12 @@
         "oauth2RedirectUrl": "{{oauth2_redirect_url}}",
         {% endif %}
         "validatorUrl": "{{validatorUrl}}",
-        {{options_str | safe}}
+        {{options_str | safe}},
+        {% if request_interceptor %}
+        requestInterceptor: function(req) {
+          {{ request_interceptor | safe }}
+        },
+        {% endif %}
       })
 
       {% if oath2_prop_str != "{}" %}
@@ -98,6 +103,10 @@
           childList: true,
         });
       }
+      {% if on_complete_script %}
+      // Custom onComplete script from plugin config
+      {{ on_complete_script | safe }}
+      {% endif %}
     }
 
     update_top_val = function(top){
